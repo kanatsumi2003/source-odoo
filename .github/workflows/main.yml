@@ -32,7 +32,7 @@ jobs:
        run: 'if ! command -v sshpass &> /dev/null; then sudo apt-get install -y sshpass; fi'
      - name: Pull and run Docker image
        run: |
-          cp "${{vars.ENV}}" > .env
+          echo "${{vars.ENV}}" > odoo.conf
           
           sshpass -p ${{secrets.SSH_PASSWORD}} ssh -o StrictHostKeyChecking=no ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} "
           
@@ -41,5 +41,5 @@ jobs:
           docker rmi ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}} || true
           
           docker pull ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
-          docker run -d -p ${{vars.ODOO_LISTEN_PORT_PRODUCTION}}:${{vars.ODOO_PORT}} --env-file .env --name ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} -v ${{vars.ODOO_FILESTORE_VOLUME_PRODUCTION}}:${{vars.ODOO_FILESTORE_PATH}} ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
+          docker run -d -p ${{vars.ODOO_LISTEN_PORT_PRODUCTION}}:${{vars.ODOO_PORT}} --name ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} -v ${{vars.ODOO_FILESTORE_VOLUME_PRODUCTION}}:${{vars.ODOO_FILESTORE_PATH}} ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
           "
