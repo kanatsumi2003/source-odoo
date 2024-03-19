@@ -33,7 +33,6 @@ jobs:
      - name: Pull and run Docker image
        run: |
           sshpass -p ${{secrets.SSH_PASSWORD}} ssh -o StrictHostKeyChecking=no ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} "
-          echo "${{vars.ENV}}" > odoo.conf
           
           docker stop ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} || true
           docker rm ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} || true
@@ -41,4 +40,7 @@ jobs:
           
           docker pull ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
           docker run -d -p ${{vars.ODOO_LISTEN_PORT_PRODUCTION}}:${{vars.ODOO_PORT}} --name ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} -v ${{vars.ODOO_FILESTORE_VOLUME_PRODUCTION}}:${{vars.ODOO_FILESTORE_PATH}} ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
+
+          docker cp ${{vars.ODOO_CONFIG_FILE}} ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}}:${{vars.ODOO_ROOT_CONFIG_FILE}}
+          docker restart ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}}
           "
