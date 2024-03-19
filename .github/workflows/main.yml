@@ -32,7 +32,7 @@ jobs:
        run: 'if ! command -v sshpass &> /dev/null; then sudo apt-get install -y sshpass; fi'
      - name: Pull and run Docker image
        run: |
-          cp "${{vars.ENV}}" .env
+          cp "${{vars.ENV}}" > .env
           
           sshpass -p ${{secrets.SSH_PASSWORD}} ssh -o StrictHostKeyChecking=no ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} "
           
