@@ -32,9 +32,8 @@ jobs:
        run: 'if ! command -v sshpass &> /dev/null; then sudo apt-get install -y sshpass; fi'
      - name: Pull and run Docker image
        run: |
-          echo "${{vars.ENV}}" > odoo.conf
-          
           sshpass -p ${{secrets.SSH_PASSWORD}} ssh -o StrictHostKeyChecking=no ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} "
+          echo "${{vars.ENV}}" > odoo.conf
           
           docker stop ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} || true
           docker rm ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} || true
