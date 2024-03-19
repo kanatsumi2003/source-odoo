@@ -14,9 +14,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       
-      - name: Write Environment Variable to File
-        run: echo "${{vars.CONF}}" > odoo.conf
-      
       - name: Login to Docker Hub
         run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
         
@@ -35,6 +32,8 @@ jobs:
        run: 'if ! command -v sshpass &> /dev/null; then sudo apt-get install -y sshpass; fi'
      - name: Pull and run Docker image
        run: |
+          cp "${{vars.ENV}}" .env
+          
           sshpass -p ${{secrets.SSH_PASSWORD}} ssh -o StrictHostKeyChecking=no ${{secrets.SSH_USERNAME}}@${{secrets.SSH_HOST}} "
           
           docker stop ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} || true
@@ -42,5 +41,5 @@ jobs:
           docker rmi ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}} || true
           
           docker pull ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
-          docker run -d -p ${{vars.ODOO_LISTEN_PORT_PRODUCTION}}:${{vars.ODOO_PORT}} --name ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} -v ${{vars.ODOO_FILESTORE_VOLUME_PRODUCTION}}:${{vars.ODOO_FILESTORE_PATH}} ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
+          docker run -d -p ${{vars.ODOO_LISTEN_PORT_PRODUCTION}}:${{vars.ODOO_PORT}} --env-file .env --name ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} -v ${{vars.ODOO_FILESTORE_VOLUME_PRODUCTION}}:${{vars.ODOO_FILESTORE_PATH}} ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
           "
