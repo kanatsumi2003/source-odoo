@@ -5,7 +5,8 @@ on:
   push:
     branches:
       - main  # or the branch you want to trigger the workflow on
-
+env: 
+  DOCKER_REGISTRY: ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
 # Define jobs for the workflow
 jobs:
   build:
@@ -18,10 +19,10 @@ jobs:
         run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASSWORD}}
         
       - name: Build Docker image
-        run: docker build -t ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}} .
+        run: docker build -t $DOCKER_REGISTRY .
 
       - name: Push Docker image to Docker Hub
-        run: docker push ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
+        run: docker push $DOCKER_REGISTRY
 
   deploy:
     needs: build
@@ -36,11 +37,10 @@ jobs:
           
           docker stop ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} || true
           docker rm ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} || true
-          docker rmi ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}} || true
+          docker rmi $DOCKER_REGISTRY || true
           
-          docker pull ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
-          docker run -d -p ${{vars.ODOO_LISTEN_PORT_PRODUCTION}}:${{vars.ODOO_PORT}} --name ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} -v ${{vars.ODOO_FILESTORE_VOLUME_PRODUCTION}}:${{vars.ODOO_FILESTORE_PATH}} ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
-
+          docker pull $DOCKER_REGISTRY
+          docker run -d -p ${{vars.ODOO_LISTEN_PORT_PRODUCTION}}:${{vars.ODOO_PORT}} --name ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}} -v ${{vars.ODOO_FILESTORE_VOLUME_PRODUCTION}}:${{vars.ODOO_FILESTORE_PATH}} $DOCKER_REGISTRY
           docker cp ${{vars.ODOO_CONFIG_FILE}} ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}}:${{vars.ODOO_ROOT_CONFIG_FILE}}
           docker restart ${{vars.ODOO_CONTAINER_NAME_PRODUCTION}}
           "
