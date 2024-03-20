@@ -4,7 +4,10 @@ name: Build and Push Odoo image
 on:
   push:
     branches:
-      - main  # or the branch you want to trigger the workflow on
+      - production
+  pull_request:
+    branches:
+      - production
 env: 
   DOCKER_REGISTRY: ${{secrets.DOCKER_USERNAME}}/${{secrets.DOCKER_IMAGE}}:${{vars.VERSION_PRODUCTION}}
 # Define jobs for the workflow
